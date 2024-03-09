@@ -21,39 +21,44 @@ This demonstrates how to create a VPC that you can use for servers in a producti
 5. Name the VPC as `aws-prod-example` (Name tag auto-generation).
 6. Ensure that there are two public and two private subnets.
 7. Set up 1 NAT Gateway per Availability Zone: `1 per AZ`.
-8. Set VPC Endpoint to `None`.
+8. Set VPC Endpoint to `None` (This is the spot where we remove the default created config of the VPC endpoint for the S3 bucket).
 9. Press `Create VPC`.
 10. Keep the rest of the settings as default.
 
+### Explanation of previews
+
 ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/7af9f934-83f7-4268-b514-fd840e3311f9)
 
-Public subnets are attached with a route table that has a destination as an internet gateway (public subnets should have a route table with internet gateway attached to it, so that traffic flows into the public subnets)
+AWS has created public-private Subnets in the `US East 1A AZ` and `US East 1B AZ`. Public subnets are attached with a route table that has a destination as an internet gateway (public subnets should have a route table with internet gateway attached to it, so that traffic flows into the public subnets)
 
 ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/5b0edd09-9322-4bc8-b920-47f78ef234fb)
 
-Also, AWS gives you two private subnets that have two different route tables and it is attached to a VPC endpoint for the S3 bucket. This project has nothing to do with the VPC endpoint and It should remove this from the configuration.
+Also, AWS gives you two private subnets that have two different route tables and it is attached to a VPC endpoint for the S3 bucket. This project has nothing to do with the VPC endpoint and It should remove this from the configuration (Done in step 8 above).
 
-## Create Auto Scaling Group
 
-1. Search for EC2 in the AWS Console and navigate to the "Auto Scaling Group" option on the left-hand side.
+## Step 2: Create Auto Scaling Group
 
-2. Select "Create Auto Scaling Group" using a launch template named 'launch-prod' with the description 'app deploy in pvt subnet.'
+1. Search for EC2 in the AWS Console and select `Auto Scaling Group` in the left pane.
+2. Create a new Auto Scaling Group using a launch template. Before creating the auto-scaling group, you have to have a lunch template. So press: `Create a lunch template`.
+3. Name the Launch Template `aws-prod-exaple` with a description of `app deploy in pvt subnet`.
+4. For the AMI Select the `Ubuntu (Ubuntu Server 22.04 LTS (HVM), SSD Volume Type)`.
+5. Select a `Free Tier Eligible` instance type.
 
-3. Choose the Amazon Linux 2 AMI and a Free Tier Eligible instance type.
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/efc302b1-18ee-4713-9c83-17720401bc7e)
 
-4. Select or create a Key Pair, and set up a new security group named 'aws-prod-sec' with inbound rules for SSH (port 22) and the application (port 8000).
+7. Choose or create a Key Pair.
+8. In network settings for the Firewall (security groups) press the `Create security group` and set up a new security group named `aws-prod-sg`.
+9. Select the correct VPC above that was created instead of the default VPC: `aws-prod-example-vpc`
+10. Configure inbound rules for SSH (port 22) and the application (port 8000).
+11. Create the Launch Template.
+12. Navigate to the EC2 dashboard, go to the Auto Scaling Group section, and create a new Auto Scaling Group using the previously created launch template.
+13. Choose the 'prod-environ-vpc' VPC.
+14. Select the private Availability Zones for deployment.
+15. Skip Load Balancing configuration.
+16. Set the desired capacity to 2 instances, minimum capacity to 1, and maximum capacity to 4.
+17. Create the Auto Scaling Group.
 
-5. Launch the Auto Scaling Group in the previously created VPC ('prod-environ-vpc').
-
-6. Add Security Group Rules for SSH and the application.
-
-7. Create the Launch Template.
-
-8. Navigate to the EC2 dashboard, then the Auto Scaling Group section. Create a new Auto Scaling Group using the previously created Launch Template.
-
-9. Choose 'prod-environ-vpc,' select private Availability Zones, and set desired, minimum, and maximum capacity.
-
-10. Create the Auto Scaling Group.
+**Note:** Auto Scaling Group creation may take some time.
 
 ## Confirm Auto Scaling Group
 
