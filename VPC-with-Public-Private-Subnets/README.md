@@ -90,23 +90,59 @@ That's where Bastion host comes into the picture. It acts as a mediator between 
 
 ## SSH into a Private EC2 Instance
 
-1. Get the private address of an instance in the application tier and SSH into it using agent forwarding.
+To SSH into the private instances, we first need to connect to our Bastion host instance. 
+From there, we'll be able to SSH into the private instance. Make sure that the PEM file is present on the Bastion host. 
+Without it, you won't be able to SSH into the private instance from the Bastion host.
+
+1. Open a terminal window on your local machine.
+2. Copy the PEM file (or the private key of the VM that was created by the auto-calling group) to the Bastion host using the SCP command.
+
+   Dummy: `scp -i <Bastionhost'sKeyPair.pem> <Instence'sKeyPair.pem> ubuntu@<bastion-ec2-instance-ip>:/home/ubuntu`
+   - `Bastionhost'sKeyPair.pem`: Specifies the path to Bastion host's private key file for authentication.
+   - `Instence'sKeyPair.pem`: Specifies the path to private subnet Instence's private key file that needs to be sent to the Bastion host (that you want to copy).
+   - `:/home/ubuntu`: The key which is above to send (or copy) to the bastion host, will reside in this location.
+
+   Used: `scp -i Downloads/tween-prod-nvir.pem Downloads/tween-prod-nvir.pem ubuntu@18.234.83.17:/home/ubuntu`
+   
+   The above command will copy the PEM file from your computer to the Bastion host. Once the file is successfully copied, move on to the next step.
+4. Permission issue came into play while trying to ssh the created instances (ssh from bastion to private subnet’s ec2).
+
+   Dummy: `chmod 600 <Instence'sKeyPair.pem>`
+   - `Instence'sKeyPair.pem`: The key sent to `/home/ubuntu` on the Bastion host.
+   
+   Used: `chmod 600 tween-prod-nvir.pem`
+5. SSH into the private subnet’s ec2 from Bastion host using the following command.
+   ```
+   ssh -i tween-prod-nvir.pem ubuntu@10.0.157.146
+   ```
+   10.0.157.146 is a private IP of created ec2 instances in the private subnet.
 
 ## Create Application in Private Instance
 
-1. Create an HTML page using `vim index.html` and launch a Python server with `python3 -m http.server 8000`.
+now I can log into the private instance as well and all that I'll do is install a very simple Python application.
+
+1. Create an HTML page using `vim index.html`.
+   
+   within this file, we are going to create a very basic HTML page. You can put whatever the fancy HTML pages as well. Finally, save the file and exit.
+2. Launch Python HTTP server on port 8000 to deploy your application on the private instance with `python3 -m http.server 8000`.
+   
+   Now, your application is deployed on the private instance on port 8000.
+
+**Note:** We intentionally deployed the application on only one instance to check if the Load Balancer will distribute 50% of the traffic to one instance (which will receive a response) and 50% to another instance (which will not receive a response).
 
 ## Create Load Balancer
 
-1. In the EC2 dashboard, select Load Balancer and choose Application Load Balancer.
-
-2. Name it 'aws-prod-example,' set it as internet-facing, and configure it for HTTP traffic on port 8000.
-
-3. Ensure it's in the same VPC, set security group to 'aws-prod-sec,' and create a target group named 'aws-prod-tg.'
-
-4. Register the two instances in the target group on port 8000.
-
-5. Once completed, copy the DNS name and paste it into the browser to access the deployed application.
+1. In the EC2 dashboard, select `Load Balancer` and choose `Application Load Balancer`.
+2. Name it `aws-prod-alb`, set Scheme as `internet-facing`
+3. Keep the IP address type as it is: `IPv4`
+4. Ensure that it is placed in the same VPC where the instances have been deployed: `aws-prod-example-vpc`.
+5. Set the Mapping for both `Public AZ` only.
+6. Select a Security Group that allow SSH traffic and port 8000 traffic.
+7. Create a Target group where you will Define which instances should be accessible: `Create target group`.
+8. 
+9. Ensure it's in the same VPC, set security group to 'aws-prod-sec,' and create a target group named 'aws-prod-tg.'
+10. Register the two instances in the target group on port 8000.
+11. Once completed, copy the DNS name and paste it into the browser to access the deployed application.
 
 ## Clean Up
 
