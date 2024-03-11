@@ -136,14 +136,28 @@ now I can log into the private instance as well and all that I'll do is install 
 2. Name it `aws-prod-alb`, set Scheme as `internet-facing`
 3. Keep the IP address type as it is: `IPv4`
 4. Ensure that it is placed in the same VPC where the instances have been deployed: `aws-prod-example-vpc`.
-5. Set the Mapping for both `Public AZ` only.
-6. Select a Security Group that allow SSH traffic and port 8000 traffic.
+5. Set the Mapping for both `Public AZ` only: `aws-prod-example-subnet-public1-us-east-1a` and `aws-prod-example-subnet-public2-us-east-1b`.
+6. Select a Security Group that allow SSH, HTTP traffic and port 8000 traffic: `aws-prod-sg`.
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/2896df2d-0646-484d-b07a-c517b1a5064a)
 7. Create a Target group where you will Define which instances should be accessible: `Create target group`.
-8. 
-9. Ensure it's in the same VPC, set security group to 'aws-prod-sec,' and create a target group named 'aws-prod-tg.'
-10. Register the two instances in the target group on port 8000.
-11. Once completed, copy the DNS name and paste it into the browser to access the deployed application.
+   - Choose a target type: `Instances`
+   - Target group name: `aws-prod-tg`
+   - Protocol | Port: `HTTP`|`8000`
+   - IP address type: `IPv4`
+   - Then keep the rest as default, Scroll down and then Click `Next`
+9. Select the instances that you are trying to access using port 8000 and Click `Include as pending below`.
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/38269844-14f1-4ec2-a078-69ee743d725f)
+10. Scroll down and then Click `Create target group`. Then let's add this target group to the load balancer
+11. Select the `Default action` as created target group: `aws-prod-tg`
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/18655df3-1e55-4c22-9918-03121d09c717)
+12. Then keep the rest as default, Scroll down and then Click `Create load balancer`.
+13. Copy the DNS name and paste it into the browser and be able to access the website. 
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/3b227e50-bd7f-476d-945d-905d4cf190e2)
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/ea666c46-f0d5-4892-bd17-a4e2b63bddaf)
+   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/baae794d-0a41-450d-bfda-9ff235bbed48)
+
+Now we have deployed the Application securely in a Private instance. However I have intentionally not deployed in one of the instances, so sometimes you will get an error.
 
 ## Clean Up
 
-Remember to terminate all instances and resources to avoid incurring charges beyond the free tier limits.
+When you are finished with this configuration, you can delete it. Before you can delete the VPC, you must delete the Auto Scaling group, terminate your instances, delete the NAT gateways, and delete the load balancer. For more information, see [Delete your VPC](https://docs.aws.amazon.com/vpc/latest/userguide/delete-vpc.html).
