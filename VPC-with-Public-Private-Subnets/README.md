@@ -142,7 +142,7 @@ now I can log into the private instance as well and all that I'll do is install 
 7. Create a Target group where you will Define which instances should be accessible: `Create target group`.
    - Choose a target type: `Instances`
    - Target group name: `aws-prod-tg`
-   - Protocol | Port: `HTTP`|`8000`
+   - Protocol | Port: `HTTP`|`80`
    - IP address type: `IPv4`
    - Then keep the rest as default, Scroll down and then Click `Next`
 9. Select the instances that you are trying to access using port 8000 and Click `Include as pending below`.
