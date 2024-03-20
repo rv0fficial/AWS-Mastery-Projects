@@ -18,8 +18,8 @@ This demonstrates how to create a VPC that you can use for servers in a producti
 2. In the AWS Console, search for `VPC`.
 3. Within the VPC dashboard, select the option to create a VPC: `Create VPC`.
 4. Choose `VPC and more` option to simplify configuration (Other wise we have to create the Subnets, IPv4, IPv6 and other necessary configurations).
-5. Name the VPC as `aws-prod-example-vpc` (Name tag auto-generation).
-6. Ensure that there are two public and two private subnets.
+5. Name the VPC as `aws-prod-example` (Name tag auto-generation).
+6. Ensure that there are `two public` and `two private` subnets.
 7. Set up 1 NAT Gateway per Availability Zone: `1 per AZ`.
 8. Set VPC Endpoint to `None` (This is the spot where we remove the default created config of the VPC endpoint for the S3 bucket).
 9. Press `Create VPC`.
@@ -35,37 +35,54 @@ AWS has created public-private Subnets in the `US East 1A AZ` and `US East 1B AZ
 
 Also, AWS gives you two private subnets that have two different route tables and it is attached to a VPC endpoint for the S3 bucket. This project has nothing to do with the VPC endpoint and It should remove this from the configuration (Done in step 8 above).
 
+## Step 2: Create launch template
 
-## Step 2: Create Auto Scaling Group
-
-1. Search for EC2 in the AWS Console and select `Auto Scaling Group` in the left pane.
-2. Create a new Auto Scaling Group using a launch template. Before creating the auto-scaling group, you have to have a lunch template. So press: `Create a lunch template`.
-3. Name the Launch Template `aws-prod-template` with a description of `app deploy in pvt subnet`.
+1. Create a new Auto Scaling Group using a launch template. Before creating the auto-scaling group, you have to have a lunch template. So press: `Create a lunch template`.
+2. Name the Launch Template `aws-prod-allprivate-ec2s-lt` with a description of `This is the launch template used to deploy websites in the private subnet`.
+3. Select the `Auto Scalling guidance` by clicking the given checkbox ☑.
 4. For the AMI Select the `Ubuntu (Ubuntu Server 22.04 LTS (HVM), SSD Volume Type)`.
 5. Select a `Free Tier Eligible` instance type.
-   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/efc302b1-18ee-4713-9c83-17720401bc7e)
-7. Choose or create a Key Pair.
-8. In network settings for the Firewall (security groups) press the `Create security group` and set up a new security group named `aws-prod-sg`.
-9. Select the correct VPC above that was created instead of the default VPC: `aws-prod-example-vpc`
-10. Select `Add security group rule` & configure inbound rules for SSH (`port 22`) and the application (`port 8000`).
-11. No other modification, just press: `Create launch template`.
-12. Navigate to the `EC2 dashboard`, go to the `Auto Scaling Group` section.
-13. Select `Create Auto Scaling Group` and set the Launch Template to be the one that was just created: `aws-prod-template`.
-14. Scroll down and then Click `Next`.
-15. Choose the `aws-prod-example-vpc` VPC.
-16. Select the created `two private AZs` for deployment.
-17. Scroll down and then Click `Next`.
-18. Skip the `Load Balancing` configuration, no other changes need to be made, scroll down and then Click `Next`.
-19. Set the `desired capacity` to `2` instances, `minimum capacity` to `1`, and `maximum capacity` to `4`.
-    You can configure the scaling option which means when to scale up or down, but it's not focused at this point.
-    Keep the option starting with `No` and Click `Next`.
-22. Click `Next` without adding anything to the `Add notification` section.
-23. Click `Next` without adding anything to the `Add tags` section.
-24. Scroll down and then Click `Create Auto Scaling group`.
+6. Choose or create a Key Pair.
+7. In network settings for the Firewall (security groups) press the `Create security group` and set up a new security group named `aws-prod-allprivate-ec2s-sg`.
+8. Select the correct VPC above that was created instead of the default VPC: `aws-prod-example-vpc`
+9. Select `Add security group rule` & configure inbound rules for SSH (`port 22`) and the application (`port 8000`).
+10. No other modification, just press: `Create launch template`.
+
+## Step 3: Create Auto Scaling Group
+
+#### S01: Choose launch template
+1. Search for EC2 in the AWS Console and select `Auto Scaling Group` in the left pane.
+2. Select `Create Auto Scaling Group` and set the name as: `aws-prod-asg`
+3. Set the Launch Template to be the one that was just created: `aws-prod-allprivate-ec2s-lt`.
+4. No other changes need to be made, Scroll down and then Click `Next`.
+
+#### S02: Choose instance launch option
+1. Choose the `aws-prod-example-vpc` VPC.
+2. Select the created `two private AZs` for deployment.
+3. Scroll down and then Click `Next`.
+
+#### S03: Configure advanced options
+1. Keep the `Load Balancing` (In this project, there will be separately created load balancer, So no need to create in the Auto Scaling Group configuration) and `VPC Lattice integration options` with the settings starts with `No`.
+2. No other changes need to be made, scroll down and then Click `Next`.
+
+#### S04: Configure group size and scalling
+1. Set the `desired capacity` to `2` instances, `minimum capacity` to `1`, and `maximum capacity` to `4`.
+2. You can configure the scaling option which means when to scale up or down, but it's not focused at this point. So keep the option `No scalling policies` and Click `Next`.
+3. Keep the instance maintenance policy as `No policy`
+4. Click `Next`.
+
+#### S05: Add notifications
+3. Click `Next` without adding anything to the `Add notification` section.
+
+#### S06: Add tags
+4. Click `Next` without adding anything to the `Add tags` section.
+
+#### S07: Review
+5. Scroll down and then Click `Create Auto Scaling group`.
 
 **Note:** Auto Scaling Group creation may take some time.
 
-## Confirm Auto Scaling Group
+### Confirm Auto Scaling Group
 
 1. After some time, check the EC2 dashboard to confirm that the Auto Scaling Group has provisioned two running EC2 instances.
 
@@ -83,7 +100,7 @@ That's where Bastion host comes into the picture. It acts as a mediator between 
 2. For the VPC ensure that the one selected is the one where the Ec2 Instances are located (`aws-prod-example-vpc`), else the Bastion Host will not be able to do its job.
 3. `Enable` Auto-assign Public IP as without this it will be of no use.
 4. Place the Bastion Host in one of the Public Subnet: `public1-us-east-1a` or `public2-us-east-1b`.
-5. Create a security group named `bastion-host-sg` allowing SSH.
+5. Create a security group named `bastion-host-sg` allowing SSH (22).
 7. Scroll down and then Click `Launch instence`.
 
 **Note:** Make sure this EC2 instance is inside the same VPC that was created in this project. And enable the auto-assign public IP as well.
@@ -137,17 +154,18 @@ now I can log into the private instance as well and all that I'll do is install 
 3. Keep the IP address type as it is: `IPv4`
 4. Ensure that it is placed in the same VPC where the instances have been deployed: `aws-prod-example-vpc`.
 5. Set the Mapping for both `Public AZ` only: `aws-prod-example-subnet-public1-us-east-1a` and `aws-prod-example-subnet-public2-us-east-1b`.
-6. Select a Security Group that allow SSH, HTTP traffic and port 8000 traffic: `aws-prod-sg`.
+6. Select a Security Group that allow SSH, HTTP traffic and port 8000 traffic: `aws-prod-alb-sg`.
    ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/2896df2d-0646-484d-b07a-c517b1a5064a)
 7. Create a Target group where you will Define which instances should be accessible: `Create target group`.
    - Choose a target type: `Instances`
    - Target group name: `aws-prod-tg`
-   - Protocol | Port: `HTTP`|`80`
+   - Protocol | Port: `HTTP`|`8000`
    - IP address type: `IPv4`
+   - Select the created VPC
    - Then keep the rest as default, Scroll down and then Click `Next`
-9. Select the instances that you are trying to access using port 8000 and Click `Include as pending below`.
-   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/38269844-14f1-4ec2-a078-69ee743d725f)
-10. Scroll down and then Click `Create target group`. Then let's add this target group to the load balancer
+   - Select the instances that you are trying to access using port 8000 and Click `Include as pending below`.
+     ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/38269844-14f1-4ec2-a078-69ee743d725f)
+   - Scroll down and then Click `Create target group`. Then let's add this target group to the load balancer
 11. Select the `Default action` as created target group: `aws-prod-tg`
    ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/18655df3-1e55-4c22-9918-03121d09c717)
 12. Then keep the rest as default, Scroll down and then Click `Create load balancer`.
