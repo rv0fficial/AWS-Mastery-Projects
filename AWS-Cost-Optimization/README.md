@@ -43,7 +43,7 @@ To address this issue, additional Lambda functions have to be implemented. In th
 4. After creating the function, scroll down, and you will see something like the image below.
   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/5075afc3-04bf-4107-8fd8-c1b8746de4c6)
    Click on the `Code` section.
-5. Next, clear the existing code and replace it with the `identify_stale_snapshots.py` code.
+5. Next, clear the existing code and replace it with the [ebs_stale_snapshosts_detection](https://github.com/rv0fficial/AWS-Mastery-Projects/blob/main/AWS-Cost-Optimization/ebs_stale_snapshosts_detection.py) code.
   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/a1b680e5-2997-43a7-b88b-50b0d93fd219)
 6. Click `Deploy` to save your changes, and then click `Test`. It will direct you to the following page.
   ![image](https://github.com/rv0fficial/AWS-Mastery-Projects/assets/147927710/ca233ef0-112f-4dfb-a1cd-896ddee7bf54)
